@@ -45,7 +45,11 @@ extern "C" void panic(const char *fmt, ...) {
   vprintf(fmt, list);
   va_end(list);
   printf("\033[0m\n");
+#if defined(__arm__)
+  __builtin_trap();
+#else
   asm("int3");
+#endif
 }
 
 /** 

@@ -52,11 +52,20 @@
 #define CACHE_LINE_SIZE 64
 #endif
 
+// FIXME: THE BELOW IS ONLY TRUE FOR CORTEX A15! COULD BE FALSE FOR OTHER PROCESSORS!!!
+#ifdef __arm__
+#define CACHE_LINE_SIZE 64
+#endif
+
 /* Compile read-write barrier */
 #define xdk_barrier() asm volatile("": : :"memory")
 
 /* Pause instruction to prevent excess processor bus usage */ 
+#if defined(__arm__)
+#define cpu_relax() asm volatile("": : :"memory")
+#else 
 #define cpu_relax() asm volatile("pause\n": : :"memory")
+#endif
 
 #define cmpxchg(P, O, N) __sync_val_compare_and_swap((P), (O), (N))
 #define atomic_xadd(P, V) __sync_fetch_and_add((P), (V))
@@ -74,6 +83,8 @@ static inline void *xchg(void *ptr, void *x)
                        :"m" (*(volatile long long *)ptr), "0" ((unsigned long long) x)
                        :"memory");
 #elif defined(__i386__)
+  return (void *) __atomic_exchange_n((unsigned long *)ptr, (unsigned long *)x, __ATOMIC_RELAXED);
+#elif defined(__arm__)
   return (void *) __atomic_exchange_n((unsigned long *)ptr, (unsigned long *)x, __ATOMIC_RELAXED);
 #else
 #error Unsupported platform
