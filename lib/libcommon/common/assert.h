@@ -45,7 +45,11 @@ extern "C"
 void panic(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 #ifdef CONFIG_BUILD_DEBUG
+#if defined(__arm__)
+#define soft_stop( X ) ::printf("%s[%s:%d] STOP: %s%s\n", ESC_ERR, __FILE__, __LINE__, X, ESC_END ); __builtin_trap()
+#else
 #define soft_stop( X ) ::printf("%s[%s:%d] STOP: %s%s\n", ESC_ERR, __FILE__, __LINE__, X, ESC_END ); asm("int3")
+#endif
 #else
 #define soft_stop( X )
 #endif

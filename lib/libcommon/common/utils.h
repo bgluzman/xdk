@@ -77,6 +77,10 @@ void panic(const char *format, ...) __attribute__((format(printf, 1, 2)));
 #define mb()  asm volatile("lock; addl $0,0(%%esp)", "mfence", (0*32+26))
 #define rmb() asm volatile("lock; addl $0,0(%%esp)", "lfence", (0*32+26))
 #define wmb() asm volatile("lock; addl $0,0(%%esp)", "sfence", (0*32+25))
+#elif defined(__arm__)
+#define mb()  asm volatile("":::"memory")
+#define rmb() asm volatile("":::"memory")
+#define wmb() asm volatile("":::"memory")
 #else
 #error Memory barriers not implemented
 #endif
@@ -251,7 +255,10 @@ Cpu_bitset
 get_actual_affinities(const Cpu_bitset& logical_affinities, 
                       const int numa_node);
 
-
+#if defined(__arm__)
+#define cpu_relax() asm volatile("": : :"memory")
+#else
 #define cpu_relax() asm volatile("pause\n": : :"memory")
+#endif
 
 #endif // __EXO_UTILS_H__
